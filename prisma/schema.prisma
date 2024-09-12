@@ -1,0 +1,64 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Users{
+  Id Int @id @default(autoincrement()) @map("Id")
+  userId  String @unique @map("userId")
+  password String @map("password")
+  name String @map("name")
+  createdAt DateTime @default(now()) @map("createdAt")
+
+  character   Character[] // Users : Character 1:N
+
+  @@map("Users")
+}
+
+model Character{
+  characterId Int @id @default(autoincrement()) @map("characterId")
+  Id Int @map("Id")   // 사용자(Users) 테이블을 참조하는 외래키
+  nickname String @unique @map("nickname")
+  health  Int @map("health")
+  power  Int @map("power")
+  money  Int @map("money")
+  inventory Json? @map("inventory")
+  equippedItems Json? @map("equippedItems")
+  createdAt DateTime @default(now()) @map("createdAt")
+  updatedAt DateTime @updatedAt @map("updatedAt")
+
+  // Users 테이블과 관계를 설정
+  user Users @relation(fields:[Id], references: [Id], onDelete:Cascade)
+  @@map("Character")
+}
+
+model Item {
+  item_code Int @id @map("item_code")
+  item_name String @map("item_name")
+  item_price Int @map("item_price")
+  createdAt DateTime @default(now()) @map("createdAt")
+  updatedAt DateTime @updatedAt @map("updatedAt")
+
+  itemStat ItemStat? // 아이템 테이블과 아이템 정보 테이블은 1:1 관계
+  @@map("Item")
+}
+
+model ItemStat{
+  itemStatId Int @id @default(autoincrement()) @map("itemStatId")
+  bonusHealth Int? @map("bonusHealth")
+  bonusPower Int? @map("bonusPower")
+  item_code Int @unique @map("item_code") // 외래키
+
+  item Item @relation(fields:[item_code], references: [item_code], onDelete:Cascade)
+  @@map("ItemStat")
+}
